@@ -45,11 +45,18 @@ namespace CSE445Assignment3_4
         {
             double randomPrice = rng.Next(5000, 20000) / 100.00D;
             Console.WriteLine(randomPrice);
-            if (oldPrice > randomPrice + 10)      // sale when ticket cheaper
+            if (oldPrice > randomPrice + 20)      // sale when ticket cheaper
             {
                 Console.WriteLine("HUGE SALE AT: " + randomPrice);
                 priceCut?.Invoke(randomPrice);                              // emit event
                 priceCutCounter++;
+            }
+            else
+            {
+                lock(MainClass.bufferCellRef)
+                {
+                    MainClass.bufferCellRef.setCurrentPrice(-1);
+                }
             }
             oldPrice = randomPrice;
         }

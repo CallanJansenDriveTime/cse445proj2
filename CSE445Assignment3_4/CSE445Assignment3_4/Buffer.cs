@@ -9,15 +9,17 @@ namespace CSE445Assignment3_4
     public class Buffer
     {
         // n=2 data cells -> references to Order Object? 
-        int numberOfCells = 2;
-        Order[] dataCells = new Order[2];
+        public int numberOfCells = 2;
+        //public Order[] dataCells = new Order[2];
+        public double cell = -1;
+        public static double currentPrice = 0;
 
         public Buffer()
         {
             for(int i = 0; i < numberOfCells; i++)
             {
-                Order dataCell = new Order();
-                dataCells[i] = dataCell;
+                //Order dataCell = new Order();
+                //dataCells[i] = dataCell;
             }
         }
 
@@ -26,14 +28,40 @@ namespace CSE445Assignment3_4
         // synchronization / monitor req. for read/write and write/write overlap
         // Airline can read cells at the same time
 
-        public void setOneCell(Order newOrder)  // synchronized
-        {
+        //public void setOneCell(Order newOrder)  // synchronized
+        //{
 
+        //}
+
+        //public Order getOneCell() // synchronized
+        //{
+        //    return null;
+        //}
+
+        public double getCurrentPrice()
+        {
+            return currentPrice;
         }
 
-        public Order getOneCell() // synchronized
+        public void setCurrentPrice(double price)
         {
-            return null;
+            currentPrice = price;
+        }
+
+        public double getOneCell() // synchronized
+        {
+            lock(this)
+            {
+                return cell;
+            }
+        }
+
+        public void setOneCell(double newCell)  // synchronized
+        {
+            lock(this)
+            {
+                cell = newCell;
+            }
         }
     }
 }

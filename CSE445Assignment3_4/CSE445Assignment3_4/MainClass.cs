@@ -11,8 +11,10 @@ namespace CSE445Assignment3_4
     {
         public static Buffer bufferCellRef = new Buffer();
         public static Semaphore _pool;
+        public static ReaderWriterLock rwlock = new ReaderWriterLock();
         public static int padding = 0;
         private static int totalThreads = 5;
+        // public static double currentPrice;
 
         public static void Main(string[] args)
         {

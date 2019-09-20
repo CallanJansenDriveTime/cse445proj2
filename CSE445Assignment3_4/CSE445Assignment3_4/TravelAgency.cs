@@ -32,20 +32,79 @@ namespace CSE445Assignment3_4
         //        thread.Join();
         //    }
         //}
+        static Random rng = new Random();
+
     
         public static void RunTravelAgency(int id)
         {
+            int threadCount = 0;
             while(!Airline.isTerminated)
             {
-                Console.WriteLine("Thread {0} begins " + "and waits for the semaphore.", id);
-                MainClass._pool.WaitOne();// Requesting a resource        
-
+                // Console.WriteLine("Thread {0} begins " + "and waits for the semaphore.", id);
+                MainClass._pool.WaitOne();// Requesting a resource     
                 MainClass.padding = MainClass.padding + 100; // Define padding interval        
                 Console.WriteLine("Thread {0} enters the semaphore.", id);
-                Thread.Sleep(4000 + MainClass.padding);// Sleep about 1 secondplus        
-                Console.WriteLine("Thread {0} releases the semaphore.", id);
-                Console.WriteLine("Thread {0} previous semaphore count: {1}",
-                id, MainClass._pool.Release());// Release one resource
+                Thread.Sleep(rng.Next(1000, 2000));
+
+                if(MainClass.bufferCellRef.getCurrentPrice() != -1)
+                {
+                    Monitor.Enter(MainClass.bufferCellRef);
+                    try
+                    {
+                        MainClass.bufferCellRef.setOneCell(MainClass.bufferCellRef.getCurrentPrice());
+                        Console.WriteLine("Thread {0} sets the buffer.", id);
+                    }
+                    finally
+                    {
+                        Monitor.Exit(MainClass.bufferCellRef);
+                    }
+
+                    Monitor.Enter(MainClass.bufferCellRef);
+                    try
+                    {
+                        Console.WriteLine("{0} thread and value: " + MainClass.bufferCellRef.getOneCell(), id);
+                    }
+                    finally
+                    {
+                        MainClass._pool.Release();
+                        //Console.WriteLine("Thread {0} releases the semaphore. TC- {1}", id, threadCount);
+                        Monitor.Exit(MainClass.bufferCellRef);
+                    }
+                }
+                else
+                {
+                    MainClass._pool.Release();
+                }
+
+
+                // threadCount++;
+                //MainClass.rwlock.AcquireReaderLock(Timeout.Infinite);       // acquire read to 
+                //try
+                //{
+                //if(MainClass.bufferCellRef.getOneCell() == -1)
+                //{
+                //    var cook = MainClass.rwlock.UpgradeToWriterLock(300);
+                //    try
+                //    {
+                //        MainClass.bufferCellRef.setOneCell(MainClass.currentPrice);
+                //    }
+                //    finally
+                //    {
+                //        MainClass.rwlock.DowngradeFromWriterLock(ref cook);
+                //    }
+                //}
+                //}
+                //finally
+                //{
+                //    MainClass.rwlock.ReleaseReaderLock();
+                //    Console.WriteLine(MainClass.bufferCellRef.getOneCell());
+                //}
+
+                // get write lock for one of buffer cells
+
+                // Thread.Sleep(2000 + MainClass.padding);// Sleep about 1 secondplus       
+                //Console.WriteLine("Thread {0} previous semaphore count: {1}",
+                //id, MainClass._pool.Release());// Release one resource
             }
         }
 
@@ -60,6 +119,10 @@ namespace CSE445Assignment3_4
 
         public void ProcessOrder(double saleValue)
         {
+            lock(MainClass.bufferCellRef)
+            {
+                MainClass.bufferCellRef.setCurrentPrice(saleValue);
+            }
             //while (!Airline.isTerminated)
             //{
             //    Thread.Sleep(1000);
@@ -92,7 +155,7 @@ namespace CSE445Assignment3_4
             }
 
             Order newOrder = new Order();
-            SendOrder(newOrder);
+           // SendOrder(newOrder);
             
 
 
