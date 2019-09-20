@@ -44,7 +44,7 @@ namespace CSE445Assignment3_4
             {
                 travelAgencies[i].Abort();
             }
-            Console.WriteLine("Finished program- hit any key to exit.");
+            Console.WriteLine("Finished program- hit enter to exit.");
             Console.ReadLine();
         }
     }

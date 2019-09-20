@@ -8,7 +8,7 @@ namespace CSE445Assignment3_4
 {
     public class OrderProcessing
     {
-        private double tax = 0.075;                     // assume sales tax rate of 7.5%
+        private double tax = 1.075;                     // assume sales tax rate of 7.5%
         private Random rng = new Random();              // used to start async
 
         public void StartThread(Order newOrder)

@@ -11,9 +11,9 @@ namespace CSE445Assignment3_4
     {
         static Random rng = new Random();               // used to start async
 
-        public static void RunTravelAgency(int id)
+        public static void RunTravelAgency(int id)      // 5 TravelAgency threads will run here
         {
-            while (!Airline.isTerminated)
+            while (true)
             {
                 MainClass._saleEventPool.WaitOne();         // wait for a sale to happen
                 MainClass._bufferPool.WaitOne();              // sale has happened, now need to wait for buffer spot to open       
@@ -37,7 +37,7 @@ namespace CSE445Assignment3_4
                     //tempOrder.isAvailable = false;
 
                     //MainClass.bufferCellRef.setOneCell(MainClass.bufferCellRef.getCurrentPrice());
-                    Console.WriteLine("Thread {0} sets the buffer cell.", id);
+                    //Console.WriteLine("Thread {0} sets the buffer cell.", id);
 
                     Monitor.PulseAll(MainClass.bufferCellRef);
                     Monitor.Wait(MainClass.bufferCellRef);

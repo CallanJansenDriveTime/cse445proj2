@@ -38,7 +38,7 @@ namespace CSE445Assignment3_4
                 // Monitor.Wait(MainClass.bufferCellRef, 1000);
                 do
                 {
-                    success = Monitor.Wait(MainClass.bufferCellRef, 1000);
+                    success = Monitor.Wait(MainClass.bufferCellRef, 500);
 
 
                     Order toBeSubmitted = MainClass.bufferCellRef.getOneCell(1);
@@ -79,7 +79,7 @@ namespace CSE445Assignment3_4
         private void PricingModel() 
         {
             double randomPrice = rng.Next(5000, 20000) / 100.00D;       // create ticket value from $50.00 - $200.00
-            Console.WriteLine("Airline price: {0:0.00}", randomPrice);
+            Console.WriteLine("Airline ticket price: {0:0.00}", randomPrice);
             if (oldPrice > randomPrice)                                 // priceCut event when ticket value is cheaper than before
             {
                 Console.WriteLine("PriceCutEvent emitted: {0:0.00}", randomPrice);
@@ -91,7 +91,7 @@ namespace CSE445Assignment3_4
             {
                 lock(MainClass.bufferCellRef)
                 {
-                    MainClass.bufferCellRef.setCurrentPrice(-1);
+                    // MainClass.bufferCellRef.setCurrentPrice(-1);
                     MainClass.bufferCellRef.setCurrentOrder(null);
                 }
             }
