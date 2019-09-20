@@ -8,10 +8,11 @@ namespace CSE445Assignment3_4
 {
     public class Order
     {
-        private int senderId;          // ummmmmmmmm
-        private int creditCardNumber; // between 5-7k?
-        private int amount;         // #tix to order
-        private double unitPrice;   // price received from Airline Event
+        private int senderId;           // travel agency thread Id
+        private int creditCardNumber;   // between 3000, 8000 as an example
+        private int amount;             // number of tickets to order
+        private double unitPrice;       // price received from Airline Event
+        public bool isAvailable;        // used for buffer
 
         public int getSenderId()
         {
@@ -48,10 +49,9 @@ namespace CSE445Assignment3_4
             return unitPrice;
         }
 
-        public void getUnitPrice(double price)
+        public void setUnitPrice(double price)
         {
             unitPrice = price;
         }
-
     }
 }

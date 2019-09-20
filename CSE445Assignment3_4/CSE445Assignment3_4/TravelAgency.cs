@@ -15,78 +15,81 @@ namespace CSE445Assignment3_4
         {
             while (!Airline.isTerminated)
             {
-                MainClass._eventPool.WaitOne();         // wait for a sale to happen
-
-                MainClass._pool.WaitOne();              // sale has happened, now need to wait for buffer spot to open       
-                Console.WriteLine("Thread {0} enters the semaphore.", id);
-                Thread.Sleep(rng.Next(50, 350));
+                MainClass._saleEventPool.WaitOne();         // wait for a sale to happen
+                MainClass._bufferPool.WaitOne();              // sale has happened, now need to wait for buffer spot to open       
+                //Console.WriteLine("Thread {0} enters the semaphore.", id);
+                Thread.Sleep(rng.Next(50, 350));        // so the two threads don't enter at the same time
 
                 Monitor.Enter(MainClass.bufferCellRef);
                 try
                 {
-                    MainClass.bufferCellRef.setOneCell(MainClass.bufferCellRef.getCurrentPrice());
+                    Order tempOrder = MainClass.bufferCellRef.getCurrentOrder();
+                    Order newOrder = new Order();
+                    newOrder.setAmount(tempOrder.getAmount());
+                    newOrder.setUnitPrice(tempOrder.getUnitPrice());
+                    newOrder.setSenderId(id);
+                    newOrder.setCreditCardNumber(rng.Next(3000, 8000));
+                    newOrder.isAvailable = false;
+                    MainClass.bufferCellRef.setOneCell(newOrder);
+
+                    //tempOrder.setSenderId(id);
+                    //tempOrder.setCreditCardNumber(rng.Next(3000, 8000));
+                    //tempOrder.isAvailable = false;
+
+                    //MainClass.bufferCellRef.setOneCell(MainClass.bufferCellRef.getCurrentPrice());
                     Console.WriteLine("Thread {0} sets the buffer cell.", id);
+
                     Monitor.PulseAll(MainClass.bufferCellRef);
                     Monitor.Wait(MainClass.bufferCellRef);
                 }
                 finally
                 {
                     Monitor.Exit(MainClass.bufferCellRef);
-                    MainClass._pool.Release();
+                    MainClass._bufferPool.Release();
                 }
             }
         }
 
         public void ProcessOrder(double saleValue)
         {
-            lock (MainClass.bufferCellRef)
+            int amountOfTickets = (int)saleValue / 10;
+            switch (amountOfTickets)
             {
-                MainClass.bufferCellRef.setCurrentPrice(saleValue);
-            }
-            MainClass._eventPool.Release(5);
-
-            int numTix = (int)saleValue / 10;
-            switch (numTix)
-            {
-                case 5:     // major sale $50-70
+                case 5:     // major sale $50-79
                 case 6:
                 case 7:
-                    numTix = 30;
-                    Console.WriteLine("Order 30 tickets at: " + saleValue);
+                    amountOfTickets = 30;
                     break;
-                case 8:
+                case 8:     // normal sale $80-109
                 case 9:
                 case 10:
-                    numTix = 20;
-                    Console.WriteLine("Order 20 tickets at: " + saleValue);
+                    amountOfTickets = 20;
                     break;
-                case 11:
+                case 11:    // minor sale $110-139
                 case 12:
-                    numTix = 10;
-                    Console.WriteLine("Order 10 tickets at: " + saleValue);
+                case 13:
+                    amountOfTickets = 10;
                     break;
-                default:
-                    Console.WriteLine("Not a big enough sale. Ticket price too high.");
+                case 14:    // very minor sale $140-159
+                case 15:
+                    amountOfTickets = 5;
                     break;
+                default:    // $160-200 too high of a price
+                    Console.WriteLine("$160-200 too high of a price for a sale. Order not placed");
+                    return; // return, do not create order
             }
 
             Order newOrder = new Order();
-            // SendOrder(newOrder);
+            newOrder.setAmount(amountOfTickets);
+            newOrder.setUnitPrice(saleValue);
 
+            lock (MainClass.bufferCellRef)
+            {
+                // MainClass.bufferCellRef.setCurrentPrice(saleValue);
+                MainClass.bufferCellRef.setCurrentOrder(newOrder);
+            }
 
-
-            // then terminate thread
-
-            // calculate # tix to order based on sale $$
-            // specific ID of thread? -> Thread.CurrentThread.ManagedThreadId is an int
-            // create OrderClass object, fill properties
-            // SendOrder(newOrder);
-        }
-
-        private void SendOrder(Order newOrder)
-        {
-            // send order to multi cell buffer
-            // buffer object -> MainClass.bufferCellRef.setBUffer
+            MainClass._saleEventPool.Release(5);
         }
     }
 }
