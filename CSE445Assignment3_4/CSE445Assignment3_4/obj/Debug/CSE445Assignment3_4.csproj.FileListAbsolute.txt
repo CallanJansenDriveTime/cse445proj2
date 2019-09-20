@@ -12,3 +12,10 @@ C:\Users\cjansen\Desktop\CSE 445\cse445proj2\CSE445Assignment3_4\CSE445Assignmen
 C:\Users\cjansen\Desktop\CSE 445\cse445proj2\CSE445Assignment3_4\CSE445Assignment3_4\obj\Debug\CSE445Assignment3_4.csproj.CoreCompileInputs.cache
 C:\Users\cjansen\Desktop\CSE 445\cse445proj2\CSE445Assignment3_4\CSE445Assignment3_4\obj\Debug\CSE445Assignment3_4.exe
 C:\Users\cjansen\Desktop\CSE 445\cse445proj2\CSE445Assignment3_4\CSE445Assignment3_4\obj\Debug\CSE445Assignment3_4.pdb
+C:\Users\Callan\source\repos\cse445proj2\CSE445Assignment3_4\CSE445Assignment3_4\bin\Debug\CSE445Assignment3_4.exe.config
+C:\Users\Callan\source\repos\cse445proj2\CSE445Assignment3_4\CSE445Assignment3_4\bin\Debug\CSE445Assignment3_4.exe
+C:\Users\Callan\source\repos\cse445proj2\CSE445Assignment3_4\CSE445Assignment3_4\bin\Debug\CSE445Assignment3_4.pdb
+C:\Users\Callan\source\repos\cse445proj2\CSE445Assignment3_4\CSE445Assignment3_4\obj\Debug\CSE445Assignment3_4.csprojAssemblyReference.cache
+C:\Users\Callan\source\repos\cse445proj2\CSE445Assignment3_4\CSE445Assignment3_4\obj\Debug\CSE445Assignment3_4.csproj.CoreCompileInputs.cache
+C:\Users\Callan\source\repos\cse445proj2\CSE445Assignment3_4\CSE445Assignment3_4\obj\Debug\CSE445Assignment3_4.exe
+C:\Users\Callan\source\repos\cse445proj2\CSE445Assignment3_4\CSE445Assignment3_4\obj\Debug\CSE445Assignment3_4.pdb

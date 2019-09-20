@@ -14,11 +14,13 @@ namespace CSE445Assignment3_4
         public static ReaderWriterLock rwlock = new ReaderWriterLock();
         public static int padding = 0;
         private static int totalThreads = 5;
+        public static Semaphore _eventPool;
         // public static double currentPrice;
 
         public static void Main(string[] args)
         {
             _pool = new Semaphore(0, 2);
+            _eventPool = new Semaphore(0, 5);
 
             Airline airline = new Airline();
             Thread airlineThread = airline.CreateThread();
@@ -35,7 +37,6 @@ namespace CSE445Assignment3_4
                 travelAgencies[i].Name = (i + 1).ToString();
                 travelAgencies[i].Start();
             }
-            Thread.Sleep(500);
             _pool.Release(2);
 
 

@@ -29,12 +29,31 @@ namespace CSE445Assignment3_4
             newThread.Start();
         }
 
+        public void ReadOrder()
+        {
+            bool success;
+
+            lock(MainClass.bufferCellRef)
+            {
+                Monitor.Wait(MainClass.bufferCellRef, 1000);
+                do
+                {
+                    success = Monitor.Wait(MainClass.bufferCellRef, 1000);
+                    double yo = MainClass.bufferCellRef.getOneCell();
+
+                    Console.WriteLine("we got the goods, yo- " + yo);
+                    Monitor.PulseAll(MainClass.bufferCellRef);
+
+                } while (success);
+            }
+        }
+
         public void RunAirline()
         {
-            while (priceCutCounter < 10)
+            while (priceCutCounter < 5)
             {
-                Thread.Sleep(2000);
                 PricingModel();
+                Thread.Sleep(3000);
             }
 
             isTerminated = true;
@@ -45,11 +64,12 @@ namespace CSE445Assignment3_4
         {
             double randomPrice = rng.Next(5000, 20000) / 100.00D;
             Console.WriteLine(randomPrice);
-            if (oldPrice > randomPrice + 20)      // sale when ticket cheaper
+            if (oldPrice > randomPrice)      // sale when ticket cheaper
             {
                 Console.WriteLine("HUGE SALE AT: " + randomPrice);
                 priceCut?.Invoke(randomPrice);                              // emit event
                 priceCutCounter++;
+                ReadOrder();
             }
             else
             {
