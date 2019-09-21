@@ -9,11 +9,11 @@ namespace CSE445Assignment3_4
     public class OrderProcessing
     {
         private double tax = 1.075;                     // assume sales tax rate of 7.5%
-        private Random rng = new Random();              // used to start async
+        private Random rng = new Random();              // generates random location charge
 
         public void StartThread(Order newOrder)
         {
-            if(newOrder.getCreditCardNumber() > 8000 || newOrder.getCreditCardNumber() < 3000)  // validate cc #
+            if(newOrder.getCreditCardNumber() > 8000 || newOrder.getCreditCardNumber() < 3000)  // validate cc # (arbitrary range 3000-8000)
             {
                 Console.WriteLine("Invalid CC #. Order not processed.");
                 return;
@@ -24,7 +24,7 @@ namespace CSE445Assignment3_4
 
         public void CalculateTotal(Order newOrder)
         {
-            double locationCharge = rng.Next(50, 100);
+            double locationCharge = rng.Next(50, 100);  // random location charge
             double total = (newOrder.getUnitPrice() * newOrder.getAmount() * tax) + locationCharge;
 
             Console.Write("Location fee: " + locationCharge);

@@ -9,14 +9,12 @@ namespace CSE445Assignment3_4
 {
     public class Airline
     {
-        public delegate void priceCutEvent(double saleValue);       // delegate-> so that priceCutEvent points to a method: void "" (double x)
-
-        private double oldPrice = 0;
+        public delegate void priceCutEvent(double saleValue);       // delegate-> so that priceCutEvent points to a method
         public static event priceCutEvent priceCut;                 // actual event object being emitted
-        public static bool isTerminated = false;
-        private static Random rng = new Random();                   // random number generator
-        private int priceCutCounter = 0;                            // to terminate thread after n price cuts
-        private OrderProcessing processor = new OrderProcessing();
+        private OrderProcessing processor = new OrderProcessing();  // object for creating completed order threads
+        private static Random rng = new Random();                   // random number generator for generating ticket prices
+        private int priceCutCounter = 0;                            // counter to terminate thread after n price cuts
+        private double oldPrice = 0;                                // keeps track of last ticket value for comparison
 
         public Thread CreateThread()
         {
@@ -29,42 +27,7 @@ namespace CSE445Assignment3_4
             newThread.Start();
         }
 
-        public void ReadOrder()
-        {
-            bool success;
-
-            lock(MainClass.bufferCellRef)
-            {
-                // Monitor.Wait(MainClass.bufferCellRef, 1000);
-                do
-                {
-                    success = Monitor.Wait(MainClass.bufferCellRef, 500);
-
-
-                    Order toBeSubmitted = MainClass.bufferCellRef.getOneCell(1);
-                    if(toBeSubmitted == null)
-                    {
-                        Monitor.PulseAll(MainClass.bufferCellRef);
-                        return;
-                    }
-                    SubmitOrder(toBeSubmitted);
-
-                    //double yo = MainClass.bufferCellRef.getOneCell();
-                    //if(yo == -1)
-                    //{
-                    //    Monitor.PulseAll(MainClass.bufferCellRef);
-                    //    return;
-                    //}
-                    //Console.WriteLine("we got the goods, yo- " + yo);
-
-
-                    Monitor.PulseAll(MainClass.bufferCellRef);
-
-                } while (success);
-            }
-        }
-
-        public void RunAirline()
+        public void RunAirline()                // airline thread runs here. generates new ticket price-> sleeps-> repeat until n price cut events
         {
             while (priceCutCounter < 5)
             {
@@ -72,36 +35,59 @@ namespace CSE445Assignment3_4
                 Thread.Sleep(2000);
             }
 
-            isTerminated = true;
             Console.WriteLine("Terminating Airline thread");
+        }
+
+        public void ReadOrder()                 // waits for Monitor.Pulse from TravelAgency (when a buffer is set)
+        {
+            lock(MainClass.bufferCellRef.dataCells)
+            {
+                for(int i = 0; i < 2; i++)
+                {
+                    Monitor.Wait(MainClass.bufferCellRef.dataCells, 1000);
+                    Monitor.Wait(MainClass.bufferCellRef.dataCells, 1000);
+                    Order test1 = MainClass.bufferCellRef.getOneCell(0);
+                    Order test2 = MainClass.bufferCellRef.getOneCell(1);
+                    SubmitOrder(test1);
+                    SubmitOrder(test2);
+                    MainClass.bufferCellRef.resetCells();
+                    MainClass._bufferPool.Release(2);
+                }
+
+                Monitor.Wait(MainClass.bufferCellRef.dataCells, 1000);
+                Order test3 = MainClass.bufferCellRef.getOneCell(0);
+                SubmitOrder(test3);
+                MainClass.bufferCellRef.resetCells();
+                MainClass._bufferPool.Release();
+            }
         }
 
         private void PricingModel() 
         {
             double randomPrice = rng.Next(5000, 20000) / 100.00D;       // create ticket value from $50.00 - $200.00
             Console.WriteLine("Airline ticket price: {0:0.00}", randomPrice);
+
             if (oldPrice > randomPrice)                                 // priceCut event when ticket value is cheaper than before
             {
-                Console.WriteLine("PriceCutEvent emitted: {0:0.00}", randomPrice);
-                priceCut?.Invoke(randomPrice);                              // emit event
+                Console.WriteLine("PriceCutEvent emitted.", randomPrice);
+                priceCut?.Invoke(randomPrice);                          // emit event
                 priceCutCounter++;
-                ReadOrder();
+                ReadOrder();                                            // after event is emitted, need to read results from buffer
             }
             else
             {
-                if(MainClass.bufferCellRef.currentOrder != null)    // if current order is outdated
+                if(MainClass.bufferCellRef.currentOrder != null)        // if current order is outdated
                 {
                     lock (MainClass.bufferCellRef.currentOrder)
                     {
-                        // MainClass.bufferCellRef.setCurrentPrice(-1);
-                        MainClass.bufferCellRef.setCurrentOrder(null);
+                        MainClass.bufferCellRef.setCurrentOrder(null);  // reset it to null
                     }
                 }
             }
-            oldPrice = randomPrice;
+            oldPrice = randomPrice;                                     // to keep track of last price for comparison
         }
 
-        public void SubmitOrder(Order toBeSubmitted)      // ORDER OBJECT AS PARAM-> BUFFER SENDS IT
+        public void SubmitOrder(Order toBeSubmitted)                    // submit order to OrderProcessing Thread
         {
 
             Thread orderProcessingThread = new Thread(() => processor.StartThread(toBeSubmitted));

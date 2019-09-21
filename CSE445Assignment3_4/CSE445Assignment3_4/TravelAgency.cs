@@ -16,54 +16,38 @@ namespace CSE445Assignment3_4
             while (true)
             {
                 Order newOrder = new Order();
+                MainClass._priceCutEventPool.WaitOne();         // wait for a sale to happen
 
-                MainClass._saleEventPool.WaitOne();         // wait for a sale to happen
-
-
-                Order tempOrder = MainClass.bufferCellRef.getCurrentOrder();
-                newOrder.setAmount(tempOrder.getAmount());
-                newOrder.setUnitPrice(tempOrder.getUnitPrice());
-                newOrder.setSenderId(id);
-                newOrder.setCreditCardNumber(rng.Next(3000, 8000));
-                newOrder.isAvailable = false;
-
-
-                MainClass._bufferPool.WaitOne();              // sale has happened, now need to wait for buffer spot to open       
+                MainClass._bufferPool.WaitOne();              // sale has happened, now need to wait for buffer spot to open   
+                Thread.Sleep(rng.Next(50, 350));        // so the two threads don't enter at the same time    
                 //Console.WriteLine("Thread {0} enters the semaphore.", id);
-                Thread.Sleep(rng.Next(50, 350));        // so the two threads don't enter at the same time
 
-                if(Monitor.TryEnter(MainClass.bufferCellRef.dataCells[0]))
+                lock (MainClass.bufferCellRef.dataCells)
                 {
-
-                }
-
-                Monitor.Enter(MainClass.bufferCellRef);
-                try
-                {
-                    //Order tempOrder = MainClass.bufferCellRef.getCurrentOrder();
-                    //// Order newOrder = new Order();
-                    //newOrder.setAmount(tempOrder.getAmount());
-                    //newOrder.setUnitPrice(tempOrder.getUnitPrice());
-                    //newOrder.setSenderId(id);
-                    //newOrder.setCreditCardNumber(rng.Next(3000, 8000));
-                    //newOrder.isAvailable = false;
-
-                    MainClass.bufferCellRef.setOneCell(newOrder);
-
-                    //tempOrder.setSenderId(id);
-                    //tempOrder.setCreditCardNumber(rng.Next(3000, 8000));
-                    //tempOrder.isAvailable = false;
-
-                    //MainClass.bufferCellRef.setOneCell(MainClass.bufferCellRef.getCurrentPrice());
-                    //Console.WriteLine("Thread {0} sets the buffer cell.", id);
-
-                    Monitor.PulseAll(MainClass.bufferCellRef);
-                    Monitor.Wait(MainClass.bufferCellRef);
-                }
-                finally
-                {
-                    Monitor.Exit(MainClass.bufferCellRef);
-                    MainClass._bufferPool.Release();
+                    bool finished = false;
+                    while (finished == false)
+                    {
+                        Order tempOrder = MainClass.bufferCellRef.getCurrentOrder();
+                        newOrder.setAmount(tempOrder.getAmount());
+                        newOrder.setUnitPrice(tempOrder.getUnitPrice());
+                        newOrder.setSenderId(id);
+                        newOrder.setCreditCardNumber(rng.Next(3000, 8000));
+                        newOrder.isAvailableToWrite = false;
+                        
+                        if (MainClass.bufferCellRef.dataCells[0].isAvailableToWrite)
+                        {
+                            //Console.WriteLine("Thread {0} enters first buffer.", id);
+                            MainClass.bufferCellRef.setOneCell(newOrder, 0);
+                            finished = true;
+                        }
+                        else if (MainClass.bufferCellRef.dataCells[1].isAvailableToWrite)
+                        {
+                            //Console.WriteLine("Thread {0} enters second buffer.", id);
+                            MainClass.bufferCellRef.setOneCell(newOrder, 1);
+                            finished = true;
+                        }
+                    }
+                    Monitor.Pulse(MainClass.bufferCellRef.dataCells);       // signal airplane thread to read
                 }
             }
         }
@@ -92,26 +76,25 @@ namespace CSE445Assignment3_4
                 case 15:
                     amountOfTickets = 5;
                     break;
-                default:    // $160-200 too high of a price
-                    Console.WriteLine("$160-200 too high of a price for a sale. Order not placed");
-                    return; // return, do not create order
+                default:    // $160-200 high price
+                    amountOfTickets = 1;
+                    break; 
             }
 
             Order newOrder = new Order();
             newOrder.setAmount(amountOfTickets);
             newOrder.setUnitPrice(saleValue);
 
-            if(MainClass.bufferCellRef.currentOrder == null)
+            if (MainClass.bufferCellRef.currentOrder == null)
             {
-                MainClass.bufferCellRef.setCurrentOrder(newOrder);
+                MainClass.bufferCellRef.setCurrentOrder(newOrder);      // global variable of most current sale price
             }
             lock (MainClass.bufferCellRef.currentOrder)
             {
-                // MainClass.bufferCellRef.setCurrentPrice(saleValue);
-                MainClass.bufferCellRef.setCurrentOrder(newOrder);
+                MainClass.bufferCellRef.setCurrentOrder(newOrder);      // global variable of most current sale price
             }
 
-            MainClass._saleEventPool.Release(5);
+            MainClass._priceCutEventPool.Release(5);        // signal 5 threads that a priceCutEvent has happened
         }
     }
 }
