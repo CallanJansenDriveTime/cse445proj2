@@ -15,7 +15,7 @@ namespace CSE445Assignment3_4
 
 
         public Order[] dataCells = new Order[2];
-        public static Order currentOrder = new Order();
+        public Order currentOrder = new Order();
 
         public Buffer()
         {
@@ -23,7 +23,7 @@ namespace CSE445Assignment3_4
             {
                 cells[i] = -1;
 
-
+                currentOrder.isAvailable = true;
                 Order dataCell = new Order();
                 dataCell.isAvailable = true;
                 dataCells[i] = dataCell;
@@ -77,6 +77,10 @@ namespace CSE445Assignment3_4
             }
             Console.WriteLine("this shouldnt print, set one cell");
         }
+
+
+
+
 
         public double getCurrentPrice()
         {

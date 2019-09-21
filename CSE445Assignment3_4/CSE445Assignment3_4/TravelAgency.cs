@@ -15,21 +15,39 @@ namespace CSE445Assignment3_4
         {
             while (true)
             {
+                Order newOrder = new Order();
+
                 MainClass._saleEventPool.WaitOne();         // wait for a sale to happen
+
+
+                Order tempOrder = MainClass.bufferCellRef.getCurrentOrder();
+                newOrder.setAmount(tempOrder.getAmount());
+                newOrder.setUnitPrice(tempOrder.getUnitPrice());
+                newOrder.setSenderId(id);
+                newOrder.setCreditCardNumber(rng.Next(3000, 8000));
+                newOrder.isAvailable = false;
+
+
                 MainClass._bufferPool.WaitOne();              // sale has happened, now need to wait for buffer spot to open       
                 //Console.WriteLine("Thread {0} enters the semaphore.", id);
                 Thread.Sleep(rng.Next(50, 350));        // so the two threads don't enter at the same time
 
+                if(Monitor.TryEnter(MainClass.bufferCellRef.dataCells[0]))
+                {
+
+                }
+
                 Monitor.Enter(MainClass.bufferCellRef);
                 try
                 {
-                    Order tempOrder = MainClass.bufferCellRef.getCurrentOrder();
-                    Order newOrder = new Order();
-                    newOrder.setAmount(tempOrder.getAmount());
-                    newOrder.setUnitPrice(tempOrder.getUnitPrice());
-                    newOrder.setSenderId(id);
-                    newOrder.setCreditCardNumber(rng.Next(3000, 8000));
-                    newOrder.isAvailable = false;
+                    //Order tempOrder = MainClass.bufferCellRef.getCurrentOrder();
+                    //// Order newOrder = new Order();
+                    //newOrder.setAmount(tempOrder.getAmount());
+                    //newOrder.setUnitPrice(tempOrder.getUnitPrice());
+                    //newOrder.setSenderId(id);
+                    //newOrder.setCreditCardNumber(rng.Next(3000, 8000));
+                    //newOrder.isAvailable = false;
+
                     MainClass.bufferCellRef.setOneCell(newOrder);
 
                     //tempOrder.setSenderId(id);
@@ -83,7 +101,11 @@ namespace CSE445Assignment3_4
             newOrder.setAmount(amountOfTickets);
             newOrder.setUnitPrice(saleValue);
 
-            lock (MainClass.bufferCellRef)
+            if(MainClass.bufferCellRef.currentOrder == null)
+            {
+                MainClass.bufferCellRef.setCurrentOrder(newOrder);
+            }
+            lock (MainClass.bufferCellRef.currentOrder)
             {
                 // MainClass.bufferCellRef.setCurrentPrice(saleValue);
                 MainClass.bufferCellRef.setCurrentOrder(newOrder);

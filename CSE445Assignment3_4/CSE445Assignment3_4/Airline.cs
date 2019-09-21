@@ -89,10 +89,13 @@ namespace CSE445Assignment3_4
             }
             else
             {
-                lock(MainClass.bufferCellRef)
+                if(MainClass.bufferCellRef.currentOrder != null)    // if current order is outdated
                 {
-                    // MainClass.bufferCellRef.setCurrentPrice(-1);
-                    MainClass.bufferCellRef.setCurrentOrder(null);
+                    lock (MainClass.bufferCellRef.currentOrder)
+                    {
+                        // MainClass.bufferCellRef.setCurrentPrice(-1);
+                        MainClass.bufferCellRef.setCurrentOrder(null);
+                    }
                 }
             }
             oldPrice = randomPrice;
